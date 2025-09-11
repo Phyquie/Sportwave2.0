@@ -14,21 +14,106 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  posts     Post[]
+  id                 String     @id @default(cuid())
+  email              String     @unique
+  name               String?
+  age                Int
+  gender             gender
+  contactnumber      String
+  profileUrl         String
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  eventsCreated      Event[]    @relation("EventsCreated")
+  eventsParticipated Event[]    @relation("EventsParticipated")
+  teamsCreated       Team[]     @relation("TeamsCreated")
+  teamsJoined        Team[]     @relation("TeamsJoined")
+  friends            User[]     @relation("UserFriends")
+  friendOf           User[]     @relation("UserFriends")
+  defaultLocation    String
+  likedSports        sports[]
+  eventwishlist      wishList[] @relation("WishlistCreated")
+  InstagramLink      String?
+  XLink              String?
+  WhatsAppLink       String?
+  DiscordLink        String?
+  YoutubeLink        String?
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  String
+enum gender {
+  male
+  female
+}
+
+enum sports {
+  cricket
+  football
+  badminton
+  basketball
+  tennis
+  volleyball
+  tableTennis
+  hockey
+  swimming
+  athletics
+  boxing
+  wrestling
+  gymnastics
+  cycling
+  rugby
+  golf
+  skiing
+  skateboarding
+  surfing
+  martialArts
+  yoga
+  pilates
+  dance
+  crossfit
+  weightlifting
+  rowing
+  climbing
+}
+
+model wishList {
+  id          String @id @default(cuid())
+  createdById String
+  createdBy   User   @relation("WishlistCreated", fields: [createdById], references: [id])
+}
+
+enum eventType {
+  soloEvent
+  teamEvent
+}
+
+model Event {
+  id           String    @id @default(cuid())
+  name         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdById  String
+  createdBy    User      @relation("EventsCreated", fields: [createdById], references: [id])
+  eventType    eventType @default(soloEvent)
+  participants User[]    @relation("EventsParticipated")
+  teamId       String?
+  team         Team?     @relation("team", fields: [teamId], references: [id])
+  date         DateTime
+  location     String
+  description  String?
+  images       String[]
+  sportType    sports
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User     @relation("TeamsCreated", fields: [createdById], references: [id])
+  events      Event[]  @relation("team")
+  members     User[]   @relation("TeamsJoined")
+  sport       String
+  location    String
+  teamImage   String?
+  sportType   sports
 }
