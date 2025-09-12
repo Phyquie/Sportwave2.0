@@ -37,6 +37,8 @@ model User {
   WhatsAppLink       String?
   DiscordLink        String?
   YoutubeLink        String?
+  achievements       String[]
+  bio                String?
 }
 
 enum gender {
@@ -86,16 +88,15 @@ enum eventType {
 }
 
 model Event {
-  id           String    @id @default(cuid())
+  id           String      @id @default(cuid())
   name         String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
   createdById  String
-  createdBy    User      @relation("EventsCreated", fields: [createdById], references: [id])
-  eventType    eventType @default(soloEvent)
-  participants User[]    @relation("EventsParticipated")
-  teamId       String?
-  team         Team?     @relation("team", fields: [teamId], references: [id])
+  createdBy    User        @relation("EventsCreated", fields: [createdById], references: [id])
+  eventType    eventType   @default(soloEvent)
+  participants User[]      @relation("EventsParticipated")
+  teams        EventTeam[]
   date         DateTime
   location     String
   description  String?
@@ -104,16 +105,27 @@ model Event {
 }
 
 model Team {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   createdById String
-  createdBy   User     @relation("TeamsCreated", fields: [createdById], references: [id])
-  events      Event[]  @relation("team")
-  members     User[]   @relation("TeamsJoined")
+  createdBy   User        @relation("TeamsCreated", fields: [createdById], references: [id])
+  events      EventTeam[]
+  members     User[]      @relation("TeamsJoined")
   sport       String
   location    String
   teamImage   String?
   sportType   sports
+}
+
+model EventTeam {
+  event   Event  @relation(fields: [eventId], references: [id])
+  eventId String
+  team    Team   @relation(fields: [teamId], references: [id])
+  teamId  String
+
+  @@id([eventId, teamId])
+  @@index([eventId])
+  @@index([teamId])
 }
