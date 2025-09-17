@@ -1,3 +1,4 @@
+// /app/api/teams/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/prisma/client";
 
@@ -8,36 +9,47 @@ export async function POST(request: Request) {
         const {
             name,
             createdById,
-            memberIds,
             sport,
             location,
+            sportType,
             teamImage,
-            sportType
+            memberIds,
         } = body;
 
+        // ✅ Validate required fields
         if (!name || !createdById || !sport || !location || !sportType) {
             return NextResponse.json(
-                { error: "Missing required fields" },
+                {
+                    error:
+                        "Missing required fields: name, createdById, sport, location, sportType",
+                },
                 { status: 400 }
             );
         }
 
-        // Create the team
         const team = await prisma.team.create({
             data: {
                 name,
                 createdById,
                 sport,
                 location,
-                teamImage,
                 sportType,
-                members: memberIds ? {
-                    connect: memberIds.map((id: string) => ({ id }))
-                } : undefined
+                teamImage: teamImage || null,
+
+                // optional members
+                members: memberIds?.length
+                    ? {
+                        connect: memberIds.map((uid: string) => ({ id: uid })),
+                    }
+                    : undefined,
+            },
+            include: {
+                createdBy: true,
+                members: true,
             },
         });
 
-        return NextResponse.json(team);
+        return NextResponse.json(team, { status: 201 });
     } catch (error) {
         console.error("Error creating team:", error);
         return NextResponse.json(
